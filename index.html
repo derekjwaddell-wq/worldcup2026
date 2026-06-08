@@ -67,18 +67,27 @@ button.btn:disabled{opacity:.4;cursor:not-allowed}
 .pick-dot.dimmed{opacity:.25;pointer-events:none}
 .group-team-row.is-first{background:rgba(250,238,218,.3)}
 .group-team-row.is-second{background:rgba(241,239,232,.4)}
+.qf-groups{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:1rem}
+@media(max-width:480px){.qf-groups{grid-template-columns:1fr}}
+.qf-group-block{background:#fff;border:.5px solid #e0ddd6;border-radius:12px;overflow:hidden}
+.qf-group-header{font-size:11px;font-weight:500;color:#1D9E75;letter-spacing:.5px;text-transform:uppercase;padding:6px 12px;background:#f5f4f0;border-bottom:.5px solid #e0ddd6}
+.qf-section-label{font-size:10px;color:#888780;text-transform:uppercase;letter-spacing:.4px;padding:5px 12px 2px}
+.qf-team-row{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;border-bottom:.5px solid #e0ddd6;cursor:pointer;transition:background .1s}
+.qf-team-row:last-child{border-bottom:none}
+.qf-team-row:hover{background:#f9f8f5}
+.qf-team-row.dimmed{opacity:.4}
+.qf-team-row.at-limit{opacity:.2;cursor:not-allowed;pointer-events:none}
+.qf-team-row .tname{font-size:13px;color:#1a1a18}
+.qf-team-row.selected-row .tname{font-weight:500}
+.check{width:18px;height:18px;border-radius:50%;border:.5px solid #e0ddd6;display:flex;align-items:center;justify-content:center;font-size:10px;background:#f5f4f0;flex-shrink:0;color:#888780}
+.check.on{background:#378ADD;border-color:#1A6DB5;color:#fff}
 .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:1rem}
 .team-chip{padding:8px 12px;border:.5px solid #e0ddd6;border-radius:8px;font-size:13px;cursor:pointer;background:#f5f4f0;color:#1a1a18;transition:all .15s;text-align:center;user-select:none;font-family:Georgia,serif}
 .team-chip:hover{border-color:#b4b2a9}
-.team-chip.advanced{border-color:#1D9E75}
-.team-chip.selected-qf{background:#E6F1FB;border-color:#378ADD;color:#0C447C;font-weight:500}
 .team-chip.selected-sf{background:#EEEDFE;border-color:#7F77DD;color:#3C3489;font-weight:500}
 .team-chip.selected-f{background:#FAEEDA;border-color:#BA7517;color:#633806;font-weight:500}
 .team-chip.selected-champ{background:#BA7517;border-color:#854F0B;color:#fff;font-weight:500}
 .team-chip.disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
-.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#6b6a65}
-.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 .success-box{text-align:center;padding:2rem 1rem}
 .success-box h2{font-size:22px;font-weight:500;margin-bottom:8px;color:#1a1a18}
 .success-box p{font-size:14px;color:#6b6a65;line-height:1.6}
@@ -106,8 +115,6 @@ var ALL_TEAMS=Object.values(GROUPS).flat();
 var state={step:0,email:'',groups:{},qf:[],sf:[],final:[],champion:null,submitting:false};
 var root=document.getElementById('root');
 
-function getAdvanced(){var t=new Set();Object.values(state.groups).forEach(function(g){if(g.first)t.add(g.first);if(g.second)t.add(g.second);});return t;}
-
 function gpPreview(){var h='<div class="groups-preview">';Object.entries(GROUPS).forEach(function(e){var g=e[0],teams=e[1];h+='<div class="gp-card"><div class="glabel">Group '+g+'</div>';teams.forEach(function(t){h+='<div class="gteam">'+t+'</div>';});h+='</div>';});return h+'</div>';}
 
 function bracket(){return '<div class="bracket-wrap"><svg viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;font-family:Georgia,serif;"><defs><marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#888780"/></marker></defs><text x="30" y="14" font-size="9" fill="#888780" text-anchor="middle">Groups A-L</text><text x="148" y="19" font-size="9" fill="#888780" text-anchor="middle">Round of 32</text><text x="270" y="19" font-size="9" fill="#888780" text-anchor="middle">Round of 16</text><text x="384" y="19" font-size="9" fill="#888780" text-anchor="middle">Quarterfinals</text><text x="490" y="19" font-size="9" fill="#888780" text-anchor="middle">Semifinals</text><text x="578" y="19" font-size="9" fill="#888780" text-anchor="middle">Final</text>'+['A','B','C','D','E','F','G','H','I','J','K','L'].map(function(g,i){var y=32+i*19;return '<rect x="4" y="'+y+'" width="52" height="15" rx="3" fill="#E1F5EE" stroke="#1D9E75" stroke-width="0.5"/><text x="30" y="'+(y+10)+'" font-size="9" fill="#085041" text-anchor="middle" font-weight="500">Group '+g+'</text>';}).join('')+[0,1,2,3,4,5,6,7,8,9,10,11].map(function(i){var y=39+i*19;return '<line x1="56" y1="'+y+'" x2="96" y2="'+y+'" stroke="#B4B2A9" stroke-width="0.5" marker-end="url(#arr)"/>';}).join('')+[0,1,2,3,4,5,6,7].map(function(i){var y1=32+i*2*19,y2=32+(i*2+1)*19,mid=(y1+y2)/2+7;return '<rect x="97" y="'+y1+'" width="60" height="13" rx="2" fill="#E6F1FB" stroke="#378ADD" stroke-width="0.5"/><text x="127" y="'+(y1+9)+'" font-size="8" fill="#0C447C" text-anchor="middle">1st Grp '+String.fromCharCode(65+i*2)+'</text><rect x="97" y="'+y2+'" width="60" height="13" rx="2" fill="#E6F1FB" stroke="#378ADD" stroke-width="0.5"/><text x="127" y="'+(y2+9)+'" font-size="8" fill="#0C447C" text-anchor="middle">2nd Grp '+String.fromCharCode(65+i*2+1)+'</text><line x1="157" y1="'+(y1+6)+'" x2="167" y2="'+(y1+6)+'" stroke="#B4B2A9" stroke-width="0.5"/><line x1="157" y1="'+(y2+6)+'" x2="167" y2="'+(y2+6)+'" stroke="#B4B2A9" stroke-width="0.5"/><line x1="167" y1="'+(y1+6)+'" x2="167" y2="'+(y2+6)+'" stroke="#B4B2A9" stroke-width="0.5"/><line x1="167" y1="'+mid+'" x2="177" y2="'+mid+'" stroke="#B4B2A9" stroke-width="0.5" marker-end="url(#arr)"/>';}).join('')+'<rect x="97" y="222" width="60" height="13" rx="2" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/><text x="127" y="231" font-size="8" fill="#633806" text-anchor="middle">8 best 3rd</text><line x1="157" y1="228" x2="177" y2="228" stroke="#BA7517" stroke-width="0.5" stroke-dasharray="3,2" marker-end="url(#arr)"/>'+[0,1,2,3,4,5,6,7].map(function(i){var y=32+i*19+3;return '<rect x="178" y="'+y+'" width="60" height="13" rx="2" fill="#EEEDFE" stroke="#7F77DD" stroke-width="0.5"/><text x="208" y="'+(y+9)+'" font-size="8" fill="#3C3489" text-anchor="middle">Winner R32</text>';}).join('')+[0,1,2,3].map(function(i){var y1=32+i*2*19+9,y2=32+(i*2+1)*19+9,mid=(y1+y2)/2;return '<line x1="238" y1="'+y1+'" x2="248" y2="'+y1+'" stroke="#B4B2A9" stroke-width="0.5"/><line x1="238" y1="'+y2+'" x2="248" y2="'+y2+'" stroke="#B4B2A9" stroke-width="0.5"/><line x1="248" y1="'+y1+'" x2="248" y2="'+y2+'" stroke="#B4B2A9" stroke-width="0.5"/><line x1="248" y1="'+mid+'" x2="258" y2="'+mid+'" stroke="#B4B2A9" stroke-width="0.5" marker-end="url(#arr)"/>';}).join('')+[0,1,2,3].map(function(i){var y1=32+i*2*19+9,y2=32+(i*2+1)*19+9,mid=(y1+y2)/2-6;return '<rect x="259" y="'+mid+'" width="60" height="13" rx="2" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/><text x="289" y="'+(mid+9)+'" font-size="8" fill="#633806" text-anchor="middle">QF Match '+(i+1)+'</text>';}).join('')+'<rect x="423" y="120" width="60" height="14" rx="3" fill="#BA7517" stroke="#854F0B" stroke-width="0.5"/><text x="453" y="130" font-size="9" fill="#fff" text-anchor="middle" font-weight="600">THE FINAL</text><rect x="496" y="120" width="60" height="14" rx="3" fill="#EF9F27" stroke="#BA7517" stroke-width="0.5"/><text x="526" y="130" font-size="9" fill="#412402" text-anchor="middle" font-weight="600">CHAMPION</text></svg></div>';}
@@ -120,8 +127,8 @@ function render(){
   if(step==='email')html+=renderEmail();
   else if(step==='groups')html+=renderGroups();
   else if(step==='qf')html+=renderQF();
-  else if(step==='sf')html+=renderKnockout('sf','Semifinal picks',4,state.qf,'selected-sf','Final picks','Only your quarterfinal picks are available here.','8');
-  else if(step==='final')html+=renderKnockout('final','Final picks',2,state.sf,'selected-f','Champion','Only your semifinal picks are available here.','12');
+  else if(step==='sf')html+=renderKnockout('sf','Semifinal picks',4,state.qf,'selected-sf','Final picks','Only teams you selected as quarterfinalists are available here.','8');
+  else if(step==='final')html+=renderKnockout('final','Final picks',2,state.sf,'selected-f','Champion','Only teams you selected as semifinalists are available here.','12');
   else if(step==='champion')html+=renderChampion();
   else if(step==='done')html+=renderDone();
   root.innerHTML=html;
@@ -150,13 +157,29 @@ function renderGroups(){
 }
 
 function renderQF(){
-  var advanced=getAdvanced(),selected=state.qf;
-  var html='<div class="section-title">Quarterfinal picks</div><p class="section-sub">Pick 8 teams you think will reach the quarterfinals.</p><div class="explainer"><div class="rule"><span class="bullet">&#8594;</span><span>You can pick <strong>any of the 48 teams</strong> including potential 3rd-place wildcards. Each correct pick earns <strong>6 pts</strong>.</span></div><div class="rule"><span class="bullet">&#8594;</span><span>Teams outlined in green are your predicted group stage advancers.</span></div></div><div class="legend"><div class="legend-item"><div class="legend-dot" style="background:#E1F5EE;border:1px solid #1D9E75"></div>Your group stage picks</div><div class="legend-item"><div class="legend-dot" style="background:#E6F1FB;border:1px solid #378ADD"></div>Selected for QF</div></div><p class="counter">Selected: <span>'+selected.length+'/8</span></p><div class="team-grid">';
-  ALL_TEAMS.forEach(function(t){
-    var isSel=selected.indexOf(t)>-1,isAdv=advanced.has(t),atLimit=selected.length>=8&&!isSel;
-    html+='<div class="team-chip '+(isSel?'selected-qf':isAdv?'advanced':'')+' '+(atLimit?'disabled':'')+'" data-team="'+t+'" data-key="qf">'+t+'</div>';
+  var MAX=8;
+  var html='<div class="section-title">Quarterfinal picks</div><p class="section-sub">Pick 8 teams you think will reach the quarterfinals.</p><div class="explainer"><div class="rule"><span class="bullet">&#8594;</span><span>Your <strong>1st and 2nd place picks</strong> from each group are highlighted. You can also pick any other team as a potential 3rd-place wildcard.</span></div><div class="rule"><span class="bullet">&#8594;</span><span>Only teams picked here will be available in the semifinal round onward. Each correct pick earns <strong>6 pts</strong>.</span></div></div><p class="counter">Selected: <span>'+state.qf.length+'/'+MAX+'</span></p><div class="qf-groups">';
+  Object.entries(GROUPS).forEach(function(entry){
+    var grp=entry[0],teams=entry[1],picks=state.groups[grp]||{},first=picks.first||'',second=picks.second||'';
+    var others=teams.filter(function(t){return t!==first&&t!==second;});
+    html+='<div class="qf-group-block"><div class="qf-group-header">Group '+grp+'</div>';
+    if(first||second){
+      html+='<div class="qf-section-label">Your picks</div>';
+      [first,second].filter(Boolean).forEach(function(t,i){
+        var isSel=state.qf.indexOf(t)>-1,atLimit=state.qf.length>=MAX&&!isSel;
+        html+='<div class="qf-team-row '+(isSel?'selected-row':'')+' '+(atLimit?'at-limit':'')+'" data-team="'+t+'" data-type="qf"><div style="display:flex;align-items:center;gap:8px"><span class="pos-badge '+(i===0?'gold':'silver')+'">'+(i===0?'1st':'2nd')+'</span><span class="tname">'+t+'</span></div><div class="check '+(isSel?'on':'')+'">&#10003;</div></div>';
+      });
+    }
+    if(others.length){
+      html+='<div class="qf-section-label">Wildcards</div>';
+      others.forEach(function(t){
+        var isSel=state.qf.indexOf(t)>-1,atLimit=state.qf.length>=MAX&&!isSel;
+        html+='<div class="qf-team-row '+(isSel?'selected-row':'dimmed')+' '+(atLimit?'at-limit':'')+'" data-team="'+t+'" data-type="qf" style="'+(isSel?'opacity:1':'')+'"><span class="tname">'+t+'</span><div class="check '+(isSel?'on':'')+'">&#10003;</div></div>';
+      });
+    }
+    html+='</div>';
   });
-  html+='</div><div class="nav-row"><button class="btn" id="btn-back">Back</button><button class="btn primary" id="btn-next" '+(selected.length<8?'disabled':'')+'>Next: Semifinals</button></div>';
+  html+='</div><div class="nav-row"><button class="btn" id="btn-back">Back</button><button class="btn primary" id="btn-next" '+(state.qf.length<MAX?'disabled':'')+'>Next: Semifinals</button></div>';
   return html;
 }
 
@@ -209,11 +232,32 @@ function attachEvents(step){
       });
     });
   }
+  if(step==='qf'){
+    document.querySelectorAll('.qf-team-row[data-team]').forEach(function(row){
+      row.addEventListener('click',function(){
+        var team=row.dataset.team,idx=state.qf.indexOf(team);
+        if(idx>-1){
+          state.qf.splice(idx,1);
+          state.sf=state.sf.filter(function(t){return state.qf.indexOf(t)>-1;});
+          state.final=state.final.filter(function(t){return state.sf.indexOf(t)>-1;});
+          if(state.final.indexOf(state.champion)<0)state.champion=null;
+        } else if(state.qf.length<8){
+          state.qf.push(team);
+        }
+        render();
+      });
+    });
+  }
   document.querySelectorAll('.team-chip[data-key]').forEach(function(chip){
     chip.addEventListener('click',function(){
       var key=chip.dataset.key,team=chip.dataset.team;
       if(key==='champion'){state.champion=team;}
-      else{var arr=state[key],idx=arr.indexOf(team);if(idx>-1)arr.splice(idx,1);else arr.push(team);}
+      else{
+        var arr=state[key],idx=arr.indexOf(team);
+        if(idx>-1)arr.splice(idx,1);else arr.push(team);
+        if(key==='sf'){state.final=state.final.filter(function(t){return state.sf.indexOf(t)>-1;});if(state.final.indexOf(state.champion)<0)state.champion=null;}
+        if(key==='final'){if(state.final.indexOf(state.champion)<0)state.champion=null;}
+      }
       render();
     });
   });
