@@ -109,7 +109,7 @@ button.btn:disabled{opacity:.4;cursor:not-allowed}
 <body>
 <div class="app" id="root"></div>
 <script>
-var APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbzeHP98V7NdG3JU4pu08DLs1olD1gofRKALhEJi6CvvXVY41RskoM9jd3K1SKbTAuz94Q/exec';
+var APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbxb0mMH-Dk4JvmgbUahlUAyobWYqtfxdPmyIBGdhbNgJ_FHfcS55MRXqvYwqy1sGPZJ_w/exec';
 var GROUPS={A:['Mexico','South Korea','South Africa','Czechia'],B:['Canada','Switzerland','Qatar','Bosnia & Herz.'],C:['Brazil','Morocco','Scotland','Haiti'],D:['USA','Australia','Paraguay','Turkiye'],E:['Germany','Ecuador','Ivory Coast','Curacao'],F:['Netherlands','Japan','Tunisia','Sweden'],G:['Belgium','Iran','Egypt','New Zealand'],H:['Spain','Uruguay','Saudi Arabia','Cape Verde'],I:['France','Senegal','Norway','Iraq'],J:['Argentina','Austria','Algeria','Jordan'],K:['Portugal','Colombia','Uzbekistan','DR Congo'],L:['England','Croatia','Panama','Ghana']};
 var ALL_TEAMS=Object.values(GROUPS).flat();
 var state={step:0,name:'',email:'',groups:{},qf:[],sf:[],final:[],champion:null,submitting:false};
@@ -276,7 +276,11 @@ function submitToSheets(){
   var groupPicks={};
   Object.entries(state.groups).forEach(function(e){groupPicks['Group '+e[0]+' - 1st']=e[1].first||'';groupPicks['Group '+e[0]+' - 2nd']=e[1].second||'';});
   var payload=Object.assign({name:state.name,email:state.email,timestamp:new Date().toISOString()},groupPicks,{'QF Picks':state.qf.join(', '),'SF Picks':state.sf.join(', '),'Finalists':state.final.join(', '),'Champion':state.champion});
-  fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(function(e){console.error(e);}).finally(function(){state.submitting=false;state.step++;render();});
+  var params=Object.keys(payload).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(payload[k]);}).join('&');
+  var img=new Image();
+  img.src=APPS_SCRIPT_URL+'?'+params;
+  img.onload=img.onerror=function(){state.submitting=false;state.step++;render();};
+  setTimeout(function(){state.submitting=false;state.step++;render();},3000);
 }
 
 render();
