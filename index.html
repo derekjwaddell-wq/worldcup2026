@@ -280,7 +280,7 @@ function submitToSheets(){
   var img=new Image();
   img.src=APPS_SCRIPT_URL+'?'+params;
   img.onload=img.onerror=function(){state.submitting=false;state.step++;render();};
-  setTimeout(function(){state.submitting=false;state.step++;render();},3000);
+
 }
 
 render();
